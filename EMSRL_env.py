@@ -4,8 +4,7 @@ import gym
 from gym import spaces
 from copy import copy
 
-episode = 'test'
-
+episode = 'EMSRL'
 
 class BRLEnv(gym.Env):
 
@@ -99,8 +98,6 @@ class BRLEnv(gym.Env):
 
         self.action_space = spaces.Box(low=np.array([-self.ESS_P_cap, self.AWE_P_cap * 0.2]),
                                        high=np.array([self.ESS_P_cap, self.AWE_P_cap]), shape=(2,))
-        # self.action_space = spaces.Tuple((spaces.Box(-1, 1, shape=(1,)), spaces.Box(0.2, 1, shape=(1,))))
-
         self.reset()
 
     def _RESET(self):
