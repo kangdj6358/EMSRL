@@ -20,6 +20,7 @@ rl_config = dict(
     train_batch_size=8000,
     model=dict(
         fcnet_hiddens=[256, 256, 256],
+        fcnet_activation="tanh",
     )
 )
 

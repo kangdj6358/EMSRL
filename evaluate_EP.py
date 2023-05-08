@@ -59,8 +59,8 @@ def register_env(env_name, env_config={}):
 env_name = 'EMSRLEnv'
 env_config = dict(simple_optimizer=False)
 
-
 register_env(env_name, env_config)
+
 
 def create_parser(parser_creator=None):
     parser_creator = parser_creator or argparse.ArgumentParser
@@ -83,9 +83,9 @@ def create_parser(parser_creator=None):
         type=str,
         required=True,
         help="The algorithm or model to train. This may refer to the name "
-        "of a built-on algorithm (e.g. RLLib's `DQN` or `PPO`), or a "
-        "user-defined trainable function or class registered in the "
-        "tune registry.")
+             "of a built-on algorithm (e.g. RLLib's `DQN` or `PPO`), or a "
+             "user-defined trainable function or class registered in the "
+             "tune registry.")
     # parser.add_argument(
     #     "--run",
     #     default="PPO"
@@ -427,9 +427,9 @@ def rollout(agent,
             # Print out results and continue.
             print("Episode #{}: reward: {}".format(
                 episodes, eval_result["episode_reward_mean"]))
-            evaluate_reward = open(f"./reward/evaluate_reward_10.txt", "a")
-            evaluate_reward.write("{:s}\n".format(str(eval_result["episode_reward_mean"])))
-            evaluate_reward.close()
+            # evaluate_reward = open(f"./reward/evaluate_reward_10.txt", "a")
+            # evaluate_reward.write("{:s}\n".format(str(eval_result["episode_reward_mean"])))
+            # evaluate_reward.close()
             saver.end_rollout()
         return
 

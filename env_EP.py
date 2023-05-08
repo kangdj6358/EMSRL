@@ -37,7 +37,8 @@ class EMSRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = '/dataset/2020_revised.xlsx'
+        data_path = './dataset/2020_revised.xlsx'
+        # if it doesn't work, use your path like data_path = 'C://PycharmProjects/EMSRL/dataset/2020_revised.xlsx'
         df = pd.read_excel(data_path)
 
         self.df_wind = df["2020 (Wind) "][0:self.period + 48] * self.wind_frac
