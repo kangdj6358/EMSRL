@@ -38,9 +38,8 @@ setup(
 ## Results
 
 ### Training profit of PPO and MILP optimal value
-![Training profit](./figures/training_profit.png)
 
-<img src="./figures/training_profit.png" style="width:100px;" />
+<img src="./figures/training_profit.png" style="width:500px;" alt="" />
 
 -----------------------
 
