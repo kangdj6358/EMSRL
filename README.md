@@ -47,7 +47,7 @@ setup(
 
 -------------------------
 
-## Results
+## Results figure
 
 ### Training profit of PPO and MILP optimal value
 
