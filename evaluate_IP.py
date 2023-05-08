@@ -74,7 +74,6 @@ def create_parser(parser_creator=None):
         "checkpoint",
         type=str,
         nargs="?",
-        # default="/home/kangdj6358/ray_results/BRL/ppo_28/PPO/PPO_PortfolioOpt-v0_4c0bc_00000_0_2021-09-18_01-42-51/checkpoint_000090",
         help="(Optional) checkpoint from which to roll out. "
              "If none given, will use an initial (untrained) Trainer.")
 

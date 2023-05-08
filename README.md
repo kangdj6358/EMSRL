@@ -49,7 +49,9 @@ setup(
 
 ## Code implementation
 
-You can train the PPO algorithm by running the EMSRL_train_EP.py file.
+You can adjust the hyperparameters in the rl_config in the train_EP.py file.
+
+To train the dataset using PPO, please run
 
 ```
 python EMSRL_train_EP.py

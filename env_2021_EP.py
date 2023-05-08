@@ -37,11 +37,11 @@ class EMSRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = './2021_rt.xlsx'
+        data_path = '/dataset/2021_revised.xlsx'
         df = pd.read_excel(data_path)
 
-        self.df_wind = df["wind"][0:self.period + 48] * self.wind_frac
-        self.df_solar = df["solar"][0:self.period + 48] * self.solar_frac
+        self.df_wind = df["2021 (Wind) "][0:self.period + 48] * self.wind_frac
+        self.df_solar = df["2021 (Solar) "][0:self.period + 48] * self.solar_frac
         wind_uncertain = np.random.normal(1, 0, size=self.period + 48)
         solar_uncertain = np.random.normal(1, 0, size=self.period + 48)
         df_wind_uncer = self.df_wind * wind_uncertain
