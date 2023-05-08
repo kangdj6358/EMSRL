@@ -4,11 +4,12 @@ from ray import tune
 
 episode = "EMSRL"
 
+
 def register_env(env_name, env_config={}):
     # env = create_env(env_name)
     tune.register_env(env_name,
-                      lambda env_name: env(env_name,
-                                           env_config=env_config))
+                      lambda env_name: env(env_name, env_config=env_config))
+
 
 env_name = 'BRLEnv'
 env_config = {}  # Change environment parameters here
@@ -19,8 +20,8 @@ rl_config = dict(
     lr=3e-5,
     framework='torch',
     train_batch_size=8000,
-    model = dict(
-        fcnet_hiddens=[256,256,256],
+    model=dict(
+        fcnet_hiddens=[256, 256, 256],
     )
 )
 
