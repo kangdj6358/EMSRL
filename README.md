@@ -53,6 +53,12 @@ setup(
 
 <img src="./figures/training_profit.jpg" style="width:400px;" alt="" />
 
+### Action mapping of the BESS
+
+<img src="./figures/BESS_profile.jpg" style="width:400px;" alt="" />
+
+### Action mapping of the AWE
+<img src="./figures/AWE_profile.jpg" style="width:400px;" alt="" />
 -----------------------
 
 ## Code
