@@ -4,16 +4,15 @@ import gym
 from gym import spaces
 from copy import copy
 
-episode = 'EMSRL'
+episode = "EMSRL_EP"
 
-class BRLEnv(gym.Env):
+
+class EMSRLEnv(gym.Env):
 
     def __init__(self, *args, **kwargs):
 
-        #####################################################################################
-
         # BRL data import
-        self.period = 8784  # max 8760
+        self.period = 8784
         self.wind_frac = 0.05
         self.solar_frac = 0.05
         self.ESS_cap = 1500
@@ -38,27 +37,27 @@ class BRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = './2020_revised.xlsx'
+        data_path = './2020_rt.xlsx'
         df = pd.read_excel(data_path)
 
-        self.df_wind = df["2020 (Wind) "][0:self.period+48] * self.wind_frac
-        self.df_solar = df["2020 (Solar) "][0:self.period+48] * self.solar_frac
-        wind_uncertain = np.random.normal(1, 0, size=self.period+48)
-        solar_uncertain = np.random.normal(1, 0, size=self.period+48)
+        self.df_wind = df["2020 (Wind) "][0:self.period + 48] * self.wind_frac
+        self.df_solar = df["2020 (Solar) "][0:self.period + 48] * self.solar_frac
+        wind_uncertain = np.random.normal(1, 0, size=self.period + 48)
+        solar_uncertain = np.random.normal(1, 0, size=self.period + 48)
         df_wind_uncer = self.df_wind * wind_uncertain
         df_solar_uncer = self.df_solar * solar_uncertain
         df_PwPs = df_wind_uncer + df_solar_uncer
 
         self.PwPs = list(np.array(df_PwPs.tolist()))
 
-        self.ELEC_cost = df["elec_price"][24:self.period+48]
+        self.ELEC_cost = df["price"][24:self.period + 48]
         self.ELEC_cost = self.ELEC_cost.to_numpy()
 
         #####################################################################################
 
         self.num_energy = 1  # Number of energy_10 source
         self.ESS_capacity = self.ESS_cap * 0.95  # except ESS min
-        self.step_limit = self.period+24  # Curtailed data period
+        self.step_limit = self.period + 24  # Curtailed data period
 
         self.ESS_cap_remain = copy(self.ESS_capacity)
 
@@ -85,7 +84,7 @@ class BRLEnv(gym.Env):
         ELECmean = self.ELEC_cost
         asset1mean = ELECmean.reshape(1, -1)
         asset1var = np.ones(asset1mean.shape) * ELECmean * 0
-        H2mean = np.ones(self.period+24) * self.H2_cost
+        H2mean = np.ones(self.period + 24) * self.H2_cost
         asset2mean = H2mean.reshape(1, -1)
         asset2var = np.ones(asset2mean.shape) * 4.5 * 0
         self.asset_price_means = np.vstack([asset1mean, asset2mean])
@@ -102,15 +101,17 @@ class BRLEnv(gym.Env):
 
     def _RESET(self):
         self.step_count = 24
-        (self.asset_price_ELEC, self.asset_price_H2) = self._generate_asset_prices()
+        # (self.asset_price_ELEC, self.asset_price_H2) = self._generate_asset_prices()
+        self.asset_price_ELEC = self.ELEC_cost
+        self.asset_price_H2 = np.ones(self.period + 24) * self.H2_cost
         self.SOC = np.zeros(self.num_energy)
         self.ESS_cap_remain = copy(self.ESS_capacity)
         self.state = np.hstack([
             np.array(self.SOC),
             np.array([self.ESS_cap_remain]),
-            self.asset_price_ELEC[self.step_count-24:self.step_count],
-            self.asset_price_H2[self.step_count-24:self.step_count],
-            self.PwPs[self.step_count:self.step_count+24]
+            self.asset_price_ELEC[self.step_count - 24:self.step_count],
+            self.asset_price_H2[self.step_count - 24:self.step_count],
+            self.PwPs[self.step_count:self.step_count + 24]
         ])
 
         self.action_acc = []
@@ -132,6 +133,12 @@ class BRLEnv(gym.Env):
         self.H = 0
         self.TAOM = 0
 
+        # self.a = open(f".env_data/action_{episode}.txt", "a")
+        # self.b = open(f".env_data/ESS_discharge_{episode}.txt", "a")
+        # self.c = open(f".env_data/ESS_charge_{episode}.txt", "a")
+        # self.d = open(f".env_data/AWE_sell_{episode}.txt", "a")
+        # self.e = open(f".env_data/profit_{episode}.txt", "a")
+
         return self.state
 
     def _generate_asset_prices(self):
@@ -147,7 +154,6 @@ class BRLEnv(gym.Env):
         asset_prices_ELEC = asset_prices[0]
         asset_prices_H2 = asset_prices[1]
         return asset_prices_ELEC, asset_prices_H2
-
 
     def _STEP(self, action):
 
@@ -184,9 +190,14 @@ class BRLEnv(gym.Env):
 
         else:  # z1(discharge) = 0, z2(charge) = 1
             binary = 1
+            if self.PwPs[self.step_count] == 0:
+                # self.penalty += self.ESS_P_cap
+                pass
+            else:
+                pass
 
             if ESS_action > self.PwPs[self.step_count]:
-                self.penalty += ESS_action - self.PwPs[self.step_count]
+                # self.penalty += ESS_action - self.PwPs[self.step_count]
                 ESS_action = self.PwPs[self.step_count]
             else:
                 pass
@@ -203,7 +214,7 @@ class BRLEnv(gym.Env):
 
         if self.PwPs[self.step_count] - binary * ESS_action < self.AWE_P_cap * 0.2:
             if AWE_active > 40:
-                self.penalty += AWE_active - self.AWE_P_cap*0.2
+                self.penalty += AWE_active - self.AWE_P_cap * 0.2
             AWE_active = 0
         elif AWE_active > self.PwPs[self.step_count] - binary * ESS_action:
             self.penalty += AWE_active - (self.PwPs[self.step_count] - binary * ESS_action)
@@ -215,7 +226,8 @@ class BRLEnv(gym.Env):
 
         self.H2_sell = AWE_active
 
-        self.step_sell_reward = self.ELEC_sell * self.ELEC_cost[self.step_count] + self.H2_sell * self.AWE_eff / 0.0333 * self.H2_cost
+        self.step_sell_reward = self.ELEC_sell * self.ELEC_cost[
+            self.step_count] + self.H2_sell * self.AWE_eff / 0.0333 * self.H2_cost
         self.total_sell_reward += self.step_sell_reward
 
         self.TBOM = self.ELEC_store * 30
@@ -223,7 +235,7 @@ class BRLEnv(gym.Env):
         self.TAOM = 10.11 * 0.012 * self.H + 0.0019 * 2.96 * self.H + 0.11 * 0.012 * self.H + 0.00029 * 0.33 * self.H
 
         reward = (self.step_sell_reward - self.TBOM - self.TAOM - self.penalty * 100 - (
-                    self.BESS_ann + self.AWE_ann + self.ESS_P_cap * self.FOM + 0.05 * self.AWE_P_cap * self.AWE_cost) / self.step_limit) / 100000
+                self.BESS_ann + self.AWE_ann + self.ESS_P_cap * self.FOM + 0.05 * self.AWE_P_cap * self.AWE_cost) / self.step_limit) / 100000
 
         self.step_count += 1
 
@@ -234,6 +246,16 @@ class BRLEnv(gym.Env):
 
         if self.step_count >= self.step_limit:
             done = True
+            # self.a.write("{:s}\n".format(str(self.action_acc)))
+            # self.b.write("{:s}\n".format(str(self.ESS_discharge)))
+            # self.c.write("{:s}\n".format(str(self.ESS_charge)))
+            # self.d.write("{:s}\n".format(str(self.AWE_acc)))
+            # self.e.write("{:s}\n".format(str(self.profit)))
+            # self.a.close()
+            # self.b.close()
+            # self.c.close()
+            # self.d.close()
+            # self.e.close()
         else:
             self._update_state()
             done = False
@@ -244,9 +266,9 @@ class BRLEnv(gym.Env):
         self.state = np.hstack([
             np.array(self.SOC),
             np.array([self.ESS_cap_remain]),
-            self.asset_price_ELEC[self.step_count-24:self.step_count],
-            self.asset_price_H2[self.step_count-24:self.step_count],
-            self.PwPs[self.step_count:self.step_count+24]
+            self.asset_price_ELEC[self.step_count - 24:self.step_count],
+            self.asset_price_H2[self.step_count - 24:self.step_count],
+            self.PwPs[self.step_count:self.step_count + 24]
         ])
         self.penalty = 0
         self.step_sell_reward = 0

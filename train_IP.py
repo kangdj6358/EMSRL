@@ -1,17 +1,15 @@
 import ray
-from EMSRL_env import BRLEnv as env
+from env_IP import EMSRLEnv as env
 from ray import tune
 
-episode = "EMSRL"
+episode = "EMSRL_IP"
 
 
 def register_env(env_name, env_config={}):
-    # env = create_env(env_name)
-    tune.register_env(env_name,
-                      lambda env_name: env(env_name, env_config=env_config))
+    tune.register_env(env_name, lambda env_name: env(env_name, env_config=env_config))
 
 
-env_name = 'BRLEnv'
+env_name = 'EMSRLEnv'
 env_config = {}  # Change environment parameters here
 rl_config = dict(
     env=env_name,
@@ -31,6 +29,6 @@ register_env(env_name, env_config)
 # Initialize Ray and Build Agent
 ray.init(ignore_reinit_error=True)
 
-analysis = tune.run("PPO", config=rl_config, verbose=1, local_dir=f'./ray_results/rl_{episode}', checkpoint_freq=5)
+analysis = tune.run("PPO", config=rl_config, verbose=1, local_dir=f'~/results/{episode}', checkpoint_freq=5)
 
 ray.shutdown()

@@ -45,29 +45,18 @@ setup(
 )
 ```
 
--------------------------
-
-## Results figure
-
-### Training profit of PPO and MILP optimal value
-
-<img src="./figures/training_profit.jpg" style="width:400px;" alt="" />
-
-### Action mapping of the BESS
-
-<img src="./figures/BESS_profile.jpg" alt="" />
-
-### Action mapping of the AWE
-
-<img src="./figures/AWE_profile.jpg" alt="" />
-
 -----------------------
 
 ## Code implementation
 
 You can train the PPO algorithm by running the EMSRL_train_EP.py file.
+
+```
+python EMSRL_train_EP.py
+```
+
 After train the data, you can evaluate the results by:
 
 ```
-python evaluate_EP.py results/checkpoints/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env evaluate_env_EP --episodes 1000
+python evaluate_EP.py results/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env EMSRLEnv --episodes {1000}
 ```
