@@ -1,5 +1,5 @@
 import ray
-from env_IP import EMSRLEnv as env
+from environment.env_IP import EMSRLEnv as env
 from ray import tune
 
 episode = "EMSRL_IP"

@@ -4,7 +4,7 @@ import gym
 from gym import spaces
 from copy import copy
 
-episode = "EMSRL_IP"
+episode = "EMSRL_EP"
 
 
 class EMSRLEnv(gym.Env):
@@ -37,16 +37,16 @@ class EMSRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = './dataset/2020_revised.xlsx'
+        data_path = '../dataset/2020_revised.xlsx'
         # if it doesn't work, use your path like data_path = 'C://PycharmProjects/EMSRL/dataset/2020_revised.xlsx'
         df = pd.read_excel(data_path)
 
-        df_wind = df["2020 (Wind) "][0:self.period + 24] * self.wind_frac
-        df_solar = df["2020 (Solar) "][0:self.period + 24] * self.solar_frac
-        wind_uncertain = np.random.normal(1, 0, size=self.period + 24)
-        solar_uncertain = np.random.normal(1, 0, size=self.period + 24)
-        df_wind_uncer = df_wind * wind_uncertain
-        df_solar_uncer = df_solar * solar_uncertain
+        self.df_wind = df["2020 (Wind) "][0:self.period + 48] * self.wind_frac
+        self.df_solar = df["2020 (Solar) "][0:self.period + 48] * self.solar_frac
+        wind_uncertain = np.random.normal(1, 0, size=self.period + 48)
+        solar_uncertain = np.random.normal(1, 0, size=self.period + 48)
+        df_wind_uncer = self.df_wind * wind_uncertain
+        df_solar_uncer = self.df_solar * solar_uncertain
         df_PwPs = df_wind_uncer + df_solar_uncer
 
         self.PwPs = list(np.array(df_PwPs.tolist()))
@@ -112,7 +112,7 @@ class EMSRLEnv(gym.Env):
             np.array([self.ESS_cap_remain]),
             self.asset_price_ELEC[self.step_count - 24:self.step_count],
             self.asset_price_H2[self.step_count - 24:self.step_count],
-            self.PwPs[self.step_count - 24:self.step_count]
+            self.PwPs[self.step_count:self.step_count + 24]
         ])
 
         self.action_acc = []
@@ -269,7 +269,7 @@ class EMSRLEnv(gym.Env):
             np.array([self.ESS_cap_remain]),
             self.asset_price_ELEC[self.step_count - 24:self.step_count],
             self.asset_price_H2[self.step_count - 24:self.step_count],
-            self.PwPs[self.step_count - 24:self.step_count]
+            self.PwPs[self.step_count:self.step_count + 24]
         ])
         self.penalty = 0
         self.step_sell_reward = 0

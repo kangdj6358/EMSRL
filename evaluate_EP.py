@@ -46,7 +46,7 @@ Example usage w/o checkpoint (for testing purposes):
 # register_env("pa_cartpole", lambda _: ParametricActionsCartPole(10))
 
 from ray import tune
-from env_2021_EP import EMSRLEnv as env
+from environment.env_2021_EP import EMSRLEnv as env
 
 
 def register_env(env_name, env_config={}):

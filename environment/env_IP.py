@@ -4,7 +4,7 @@ import gym
 from gym import spaces
 from copy import copy
 
-episode = "EMSRL_IP_2021"
+episode = "EMSRL_IP"
 
 
 class EMSRLEnv(gym.Env):
@@ -12,7 +12,7 @@ class EMSRLEnv(gym.Env):
     def __init__(self, *args, **kwargs):
 
         # BRL data import
-        self.period = 8760
+        self.period = 8784
         self.wind_frac = 0.05
         self.solar_frac = 0.05
         self.ESS_cap = 1500
@@ -37,12 +37,12 @@ class EMSRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = './dataset/2021_revised.xlsx'
+        data_path = '../dataset/2020_revised.xlsx'
         # if it doesn't work, use your path like data_path = 'C://PycharmProjects/EMSRL/dataset/2020_revised.xlsx'
         df = pd.read_excel(data_path)
 
-        df_wind = df["2021 (Wind) "][0:self.period + 24] * self.wind_frac
-        df_solar = df["2021 (Solar) "][0:self.period + 24] * self.solar_frac
+        df_wind = df["2020 (Wind) "][0:self.period + 24] * self.wind_frac
+        df_solar = df["2020 (Solar) "][0:self.period + 24] * self.solar_frac
         wind_uncertain = np.random.normal(1, 0, size=self.period + 24)
         solar_uncertain = np.random.normal(1, 0, size=self.period + 24)
         df_wind_uncer = df_wind * wind_uncertain
@@ -121,6 +121,8 @@ class EMSRLEnv(gym.Env):
         self.AWE_acc = []
         self.profit = []
 
+        self.penalty = 0
+
         self.step_sell_reward = 0
         self.total_sell_reward = 0
 
@@ -169,8 +171,13 @@ class EMSRLEnv(gym.Env):
         elif ESS_action < 0:
             binary = 0
             ESS_action = -1 * ESS_action
+            if self.SOC[0] <= 0:
+                self.penalty += self.ESS_P_cap
+            else:
+                pass
 
             if ESS_action > self.SOC[0] * self.ESS_eff:
+                self.penalty += ESS_action - self.SOC[0] * self.ESS_eff
                 ESS_action = self.SOC[0] * self.ESS_eff
             else:
                 pass
@@ -184,13 +191,20 @@ class EMSRLEnv(gym.Env):
 
         else:  # z1(discharge) = 0, z2(charge) = 1
             binary = 1
+            if self.PwPs[self.step_count] == 0:
+                # self.penalty += self.ESS_P_cap
+                pass
+            else:
+                pass
 
             if ESS_action > self.PwPs[self.step_count]:
+                # self.penalty += ESS_action - self.PwPs[self.step_count]
                 ESS_action = self.PwPs[self.step_count]
             else:
                 pass
 
             if ESS_action > self.ESS_cap_remain / self.ESS_eff:
+                self.penalty += ESS_action - self.ESS_cap_remain / self.ESS_eff
                 ESS_action = self.ESS_cap_remain / self.ESS_eff
             else:
                 pass
@@ -200,9 +214,14 @@ class EMSRLEnv(gym.Env):
             self.SOC[0] += ESS_action * self.ESS_eff
 
         if self.PwPs[self.step_count] - binary * ESS_action < self.AWE_P_cap * 0.2:
+            if AWE_active > 40:
+                self.penalty += AWE_active - self.AWE_P_cap * 0.2
             AWE_active = 0
         elif AWE_active > self.PwPs[self.step_count] - binary * ESS_action:
+            self.penalty += AWE_active - (self.PwPs[self.step_count] - binary * ESS_action)
             AWE_active = self.PwPs[self.step_count] - binary * ESS_action
+        elif AWE_active < self.PwPs[self.step_count] - binary * ESS_action:
+            self.penalty += min(self.PwPs[self.step_count] - binary * ESS_action, self.AWE_P_cap) - AWE_active
         else:
             pass
 
@@ -216,7 +235,7 @@ class EMSRLEnv(gym.Env):
         self.H = self.H2_sell * self.AWE_eff / 0.0333
         self.TAOM = 10.11 * 0.012 * self.H + 0.0019 * 2.96 * self.H + 0.11 * 0.012 * self.H + 0.00029 * 0.33 * self.H
 
-        reward = (self.step_sell_reward - self.TBOM - self.TAOM - (
+        reward = (self.step_sell_reward - self.TBOM - self.TAOM - self.penalty * 100 - (
                 self.BESS_ann + self.AWE_ann + self.ESS_P_cap * self.FOM + 0.05 * self.AWE_P_cap * self.AWE_cost) / self.step_limit) / 100000
 
         self.step_count += 1
@@ -252,6 +271,7 @@ class EMSRLEnv(gym.Env):
             self.asset_price_H2[self.step_count - 24:self.step_count],
             self.PwPs[self.step_count - 24:self.step_count]
         ])
+        self.penalty = 0
         self.step_sell_reward = 0
         self.ELEC_sell = 0
         self.ELEC_store = 0
