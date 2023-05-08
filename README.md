@@ -9,23 +9,7 @@ EMSRL is a reinforcement learning PPO algorithm designed to maximize profits by 
 This model is described in the paper: [Optimal Planning of Hybrid Energy Storage Systems using Curtailed Renewable Energy through Deep Reinforcement Learning](https://arxiv.org/abs/2212.05662)
 
 
-## Abstract
 
-Energy management systems are becoming increasingly important in order to utilize the continuously growing curtailed
-renewable energy. Promising energy storage systems, such as batteries and green hydrogen should be employed to maximize
-the efficiency of energy stakeholders. However, optimal decision-making, i.e., planning the leveraging between different
-strategies, is confronted with the complexity and uncertainties of large-scale problems. A sophisticated deep
-reinforcement learning methodology with a policy-based algorithm is proposed here to achieve real-time optimal energy
-storage systems planning under the curtailed renewable energy uncertainty. A quantitative performance comparison proved
-that the deep reinforcement learning agent outperforms the scenario-based stochastic optimization algorithm, even with a
-wide action and observation space. A robust performance, with maximizing net profit and stable system, was confirmed to
-the uncertainty rejection capability of the deep reinforcement learning under a large uncertainty of the curtailed
-renewable energy. Action-mapping was performed for visually assessing the action taken by the deep reinforcement
-learning agent according to the state. The corresponding results confirmed that the deep reinforcement learning agent
-learns the way as the deterministic solution performs, and demonstrates more than 90% profit accuracy compared to the
-solution.
-
--------------------------------
 
 ## setup
 
@@ -47,8 +31,6 @@ setup(
     zip_safe=False,
 )
 ```
-
------------------------
 
 ## Code implementation example
 
