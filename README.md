@@ -4,7 +4,10 @@
 
 </div>
 
------------------------------
+EMSRL is a reinforcement learning PPO algorithm designed to maximize profits by utilizing battery energy storage systems (BESS) and alkaline water electrolyzers (AWE) to manage curtailed energy generated from solar and wind power.
+
+This model is described in the paper: [Optimal Planning of Hybrid Energy Storage Systems using Curtailed Renewable Energy through Deep Reinforcement Learning](https://arxiv.org/abs/2212.05662)
+
 
 ## Abstract
 
@@ -19,7 +22,7 @@ wide action and observation space. A robust performance, with maximizing net pro
 the uncertainty rejection capability of the deep reinforcement learning under a large uncertainty of the curtailed
 renewable energy. Action-mapping was performed for visually assessing the action taken by the deep reinforcement
 learning agent according to the state. The corresponding results confirmed that the deep reinforcement learning agent
-learns the way as the deterministic solution performs, and demonstrates more than 90\% profit accuracy compared to the
+learns the way as the deterministic solution performs, and demonstrates more than 90% profit accuracy compared to the
 solution.
 
 -------------------------------
@@ -47,7 +50,9 @@ setup(
 
 -----------------------
 
-## Code implementation
+## Code implementation example
+
+### Train EMSRL
 
 You can adjust the hyperparameters in the rl_config in the train_EP.py file.
 
@@ -57,8 +62,14 @@ To train the dataset using PPO, please run
 python EMSRL_train_EP.py
 ```
 
+### Evaluate the result from checkpoint
+
 After train the data, you can evaluate the results by:
 
 ```
 python evaluate_EP.py results/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env EMSRLEnv --episodes {0000}
 ```
+
+## Data
+
+Datasets related to this article can be found at [CAISO](http://www.caiso.com/informed/Pages/ManagingOversupply.aspx)
