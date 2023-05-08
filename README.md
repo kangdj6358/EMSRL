@@ -64,3 +64,10 @@ setup(
 -----------------------
 
 ## Code implementation
+
+You can train the PPO algorithm by running the EMSRL_train_EP.py file.
+After train the data, you can evaluate the results by:
+
+```
+python evaluate_EP.py results/checkpoints/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env evaluate_env_EP --episodes 1000
+```

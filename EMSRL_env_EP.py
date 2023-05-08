@@ -4,7 +4,8 @@ import gym
 from gym import spaces
 from copy import copy
 
-episode = 'EMSRL'
+episode = "RT_EP_2"
+
 
 class BRLEnv(gym.Env):
 
@@ -38,7 +39,7 @@ class BRLEnv(gym.Env):
         self.BESS_ann = self.BESS_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
         self.AWE_ann = self.AWE_cos * self.inflation_rate / ((1 + self.inflation_rate) ** self.number_of_years - 1)
 
-        data_path = './2020_revised.xlsx'
+        data_path = './2020_rt.xlsx'
         df = pd.read_excel(data_path)
 
         self.df_wind = df["2020 (Wind) "][0:self.period+48] * self.wind_frac
@@ -51,7 +52,7 @@ class BRLEnv(gym.Env):
 
         self.PwPs = list(np.array(df_PwPs.tolist()))
 
-        self.ELEC_cost = df["elec_price"][24:self.period+48]
+        self.ELEC_cost = df["price"][24:self.period+48]
         self.ELEC_cost = self.ELEC_cost.to_numpy()
 
         #####################################################################################
@@ -98,11 +99,15 @@ class BRLEnv(gym.Env):
 
         self.action_space = spaces.Box(low=np.array([-self.ESS_P_cap, self.AWE_P_cap * 0.2]),
                                        high=np.array([self.ESS_P_cap, self.AWE_P_cap]), shape=(2,))
+        # self.action_space = spaces.Tuple((spaces.Box(-1, 1, shape=(1,)), spaces.Box(0.2, 1, shape=(1,))))
+
         self.reset()
 
     def _RESET(self):
         self.step_count = 24
-        (self.asset_price_ELEC, self.asset_price_H2) = self._generate_asset_prices()
+        # (self.asset_price_ELEC, self.asset_price_H2) = self._generate_asset_prices()
+        self.asset_price_ELEC = self.ELEC_cost
+        self.asset_price_H2 = np.ones(self.period+24) * self.H2_cost
         self.SOC = np.zeros(self.num_energy)
         self.ESS_cap_remain = copy(self.ESS_capacity)
         self.state = np.hstack([
@@ -131,6 +136,12 @@ class BRLEnv(gym.Env):
         self.TBOM = 0
         self.H = 0
         self.TAOM = 0
+
+        self.a = open(f"/home/kangdj6358/PycharmProjects/pythonProject/paper_plus/env_data/action_{episode}.txt", "a")
+        self.b = open(f"/home/kangdj6358/PycharmProjects/pythonProject/paper_plus/env_data/ESS_discharge_{episode}.txt", "a")
+        self.c = open(f"/home/kangdj6358/PycharmProjects/pythonProject/paper_plus/env_data/ESS_charge_{episode}.txt", "a")
+        self.d = open(f"/home/kangdj6358/PycharmProjects/pythonProject/paper_plus/env_data/AWE_sell_{episode}.txt", "a")
+        self.e = open(f"/home/kangdj6358/PycharmProjects/pythonProject/paper_plus/env_data/profit_{episode}.txt", "a")
 
         return self.state
 
@@ -184,9 +195,14 @@ class BRLEnv(gym.Env):
 
         else:  # z1(discharge) = 0, z2(charge) = 1
             binary = 1
+            if self.PwPs[self.step_count] == 0:
+                # self.penalty += self.ESS_P_cap
+                pass
+            else:
+                pass
 
             if ESS_action > self.PwPs[self.step_count]:
-                self.penalty += ESS_action - self.PwPs[self.step_count]
+                # self.penalty += ESS_action - self.PwPs[self.step_count]
                 ESS_action = self.PwPs[self.step_count]
             else:
                 pass
@@ -234,6 +250,16 @@ class BRLEnv(gym.Env):
 
         if self.step_count >= self.step_limit:
             done = True
+            self.a.write("{:s}\n".format(str(self.action_acc)))
+            self.b.write("{:s}\n".format(str(self.ESS_discharge)))
+            self.c.write("{:s}\n".format(str(self.ESS_charge)))
+            self.d.write("{:s}\n".format(str(self.AWE_acc)))
+            self.e.write("{:s}\n".format(str(self.profit)))
+            self.a.close()
+            self.b.close()
+            self.c.close()
+            self.d.close()
+            self.e.close()
         else:
             self._update_state()
             done = False
