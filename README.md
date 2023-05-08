@@ -72,4 +72,4 @@ python evaluate_EP.py results/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/
 
 ## Data
 
-Datasets related to this article can be found at [CAISO](http://www.caiso.com/informed/Pages/ManagingOversupply.aspx)
+Datasets related to this article can be found at [California ISO](http://www.caiso.com/informed/Pages/ManagingOversupply.aspx)
