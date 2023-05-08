@@ -60,5 +60,5 @@ python EMSRL_train_EP.py
 After train the data, you can evaluate the results by:
 
 ```
-python evaluate_EP.py results/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env EMSRLEnv --episodes {1000}
+python evaluate_EP.py results/{episode}/PPO/PPO_EMSRLEnv_{}/checkpoint_{000000}/checkpoint-{00} --run PPO --env EMSRLEnv --episodes {0000}
 ```
